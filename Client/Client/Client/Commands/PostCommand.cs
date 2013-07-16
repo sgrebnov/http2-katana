@@ -62,7 +62,7 @@ namespace Client.Commands
 
             if (!File.Exists(localPath))
             {
-                throw new FileNotFoundException("The file " + localPath + " doesn't exists!");
+                throw new FileNotFoundException("The file " + localPath + " doesn't exist!");
             }
 
             LocalPath = localPath;

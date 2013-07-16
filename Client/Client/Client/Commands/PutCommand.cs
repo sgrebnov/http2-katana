@@ -4,7 +4,7 @@ using System.IO;
 
 namespace Client.Commands
 {
-    internal sealed class PushCommand : Command, IUriCommand
+    internal sealed class PutCommand : Command, IUriCommand
     {
         private Uri _uri;
         private readonly string _method;
@@ -18,9 +18,9 @@ namespace Client.Commands
         public string Method { get { return _method; } }
         public string LocalPath { get; private set; }
 
-        internal PushCommand(string cmdBody)
+        internal PutCommand(string cmdBody)
         {
-            _method = "push";
+            _method = "put";
             Parse(cmdBody);
         }
 
@@ -61,7 +61,7 @@ namespace Client.Commands
 
             if (!File.Exists(localPath))
             {
-                throw new FileNotFoundException("The file " + localPath + " doesn't exists!");
+                throw new FileNotFoundException("The file " + localPath + " doesn't exist!");
             }
 
             LocalPath = localPath;

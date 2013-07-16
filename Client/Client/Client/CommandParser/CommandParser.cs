@@ -1,7 +1,7 @@
 ﻿using System;
 using Client.Commands;
 
-namespace Client.CommandParser
+namespace Client
 {
     internal static class CommandParser
     {
@@ -21,8 +21,8 @@ namespace Client.CommandParser
 
             switch (splittedCmd[0].ToLower())
             {
-                case "push":
-                    return new PushCommand(cmdBody);
+                case "put":
+                    return new PutCommand(cmdBody);
                 case "post":
                     return  new PostCommand(cmdBody);
                 case "get":

@@ -45,15 +45,15 @@ namespace Client
     /// </summary>   
     public class Program
     {
-        private static Dictionary<string, Http2SessionHandler> _sessions;
-        private static IDictionary<string, object> _environment;
+        private static Dictionary<string, Http2SessionHandler> sessions;
+        private static IDictionary<string, object> environment;
 
         public static void Main(string[] args)
         {
-            _sessions = new Dictionary<string, Http2SessionHandler>();
+            sessions = new Dictionary<string, Http2SessionHandler>();
             var argsList = new List<string>(args);
 
-            _environment = new Dictionary<string, object>
+            environment = new Dictionary<string, object>
                 {
                     {"useHandshake", !argsList.Contains("-no-handshake")},
                     {"usePriorities", !argsList.Contains("-no-priorities")},
@@ -73,7 +73,7 @@ namespace Client
                     
                     try
                     {
-                        cmd = CommandParser.CommandParser.Parse(command);
+                        cmd = CommandParser.Parse(command);
                     }
                     catch (Exception ex)
                     {
@@ -96,19 +96,19 @@ namespace Client
                                 localPath = (cmd as PostCommand).LocalPath;
                                 serverPostAct = (cmd as PostCommand).ServerPostAct;
                             }
-                            else if (cmd is PushCommand)
+                            else if (cmd is PutCommand)
                             {
-                                localPath = (cmd as PushCommand).LocalPath;
+                                localPath = (cmd as PutCommand).LocalPath;
                             }
 
                             //Only unique sessions can be opened
-                            if (_sessions.ContainsKey(uriCmd.Uri.Authority))
+                            if (sessions.ContainsKey(uriCmd.Uri.Authority))
                             {
-                                _sessions[uriCmd.Uri.Authority].SendRequestAsync(uriCmd.Uri, method, localPath, serverPostAct);
+                                sessions[uriCmd.Uri.Authority].SendRequestAsync(uriCmd.Uri, method, localPath, serverPostAct);
                                 return;
                             }
 
-                            var sessionHandler = new Http2SessionHandler(_environment);
+                            var sessionHandler = new Http2SessionHandler(environment);
 
                             //Get cmd is equivalent for connect -> get. This means, that each get request 
                             //will open new session.
@@ -127,19 +127,19 @@ namespace Client
                             }
 
                             sessionHandler.SendRequestAsync(uriCmd.Uri, method, localPath, serverPostAct);
-                            _sessions.Add(uriCmd.Uri.Authority, sessionHandler);
+                            sessions.Add(uriCmd.Uri.Authority, sessionHandler);
                             break;
                         case CommandType.Help:
                             ((HelpCommand)cmd).ShowHelp.Invoke();
                             break;
                         case CommandType.Ping:
-                            _sessions[((PingCommand)cmd).Uri.Authority].Ping();
+                            sessions[((PingCommand)cmd).Uri.Authority].Ping();
                             break;
                         case CommandType.Exit:
-                            foreach (var sessionUri in _sessions.Keys)
+                            foreach (var sessionUri in sessions.Keys)
                             {
-                                _sessions[sessionUri].Dispose();
-                                _sessions.Remove(sessionUri);
+                                sessions[sessionUri].Dispose();
+                                sessions.Remove(sessionUri);
                             }
                             return;
                     }
