@@ -107,8 +107,6 @@ namespace Client
                 return gotException;
             }
 
-            SecureSocket sessionSocket = null;
-
             try
             {
                 int port = connectUri.Port;
@@ -140,7 +138,7 @@ namespace Client
                 _options.Flags = SecurityFlags.Default;
                 _options.AllowedAlgorithms = SslAlgorithms.RSA_AES_256_SHA | SslAlgorithms.NULL_COMPRESSION;
 
-                sessionSocket = new SecureSocket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp, _options);
+                var sessionSocket = new SecureSocket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp, _options);
 
                 using (var monitor = new ALPNExtensionMonitor())
                 {
@@ -222,19 +220,12 @@ namespace Client
                                                                      new Indexation(IndexationType.Substitution)),
                 };
 
-            if (method == "post" && !String.IsNullOrEmpty(localPath) && !String.IsNullOrEmpty(serverPostAct))
-            {
+            if (!String.IsNullOrEmpty(localPath))
                 headers.Add(new Tuple<string, string, IAdditionalHeaderInfo>(":localpath", localPath,
-                                                                     new Indexation(IndexationType.Substitution)));
+                                                     new Indexation(IndexationType.Substitution)));
+            if (!String.IsNullOrEmpty(serverPostAct))
                 headers.Add(new Tuple<string, string, IAdditionalHeaderInfo>(":serverPostAct", serverPostAct,
-                                                                     new Indexation(IndexationType.Substitution)));
-            }
-
-            if (method == "put" && !String.IsNullOrEmpty(localPath))
-            {
-                headers.Add(new Tuple<string, string, IAdditionalHeaderInfo>(":localpath", localPath,
-                                                                     new Indexation(IndexationType.Substitution)));
-            }
+                                                                    new Indexation(IndexationType.Substitution)));
 
             //Sending request with average priority
             _clientSession.SendRequest(headers, (int)Priority.Pri3, false);

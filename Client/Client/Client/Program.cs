@@ -34,7 +34,6 @@
 //-----------------------------------------------------------------------
 using System;
 using System.Collections.Generic;
-using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
 using Client.Commands;
@@ -47,14 +46,14 @@ namespace Client
     public class Program
     {
         private static Dictionary<string, Http2SessionHandler> _sessions;
-        private static IDictionary<string, object> environment;
+        private static IDictionary<string, object> _environment;
 
         public static void Main(string[] args)
         {
             _sessions = new Dictionary<string, Http2SessionHandler>();
             var argsList = new List<string>(args);
 
-            environment = new Dictionary<string, object>
+            _environment = new Dictionary<string, object>
                 {
                     {"useHandshake", !argsList.Contains("-no-handshake")},
                     {"usePriorities", !argsList.Contains("-no-priorities")},
@@ -74,9 +73,9 @@ namespace Client
                     
                     try
                     {
-                        cmd = CommandParser.Parse(command);
+                        cmd = CommandParser.CommandParser.Parse(command);
                     }
-                    catch (InvalidOperationException ex)
+                    catch (Exception ex)
                     {
                         Console.WriteLine(ex.Message);
                         continue;
@@ -97,6 +96,10 @@ namespace Client
                                 localPath = (cmd as PostCommand).LocalPath;
                                 serverPostAct = (cmd as PostCommand).ServerPostAct;
                             }
+                            else if (cmd is PushCommand)
+                            {
+                                localPath = (cmd as PushCommand).LocalPath;
+                            }
 
                             //Only unique sessions can be opened
                             if (_sessions.ContainsKey(uriCmd.Uri.Authority))
@@ -105,7 +108,7 @@ namespace Client
                                 return;
                             }
 
-                            var sessionHandler = new Http2SessionHandler(environment);
+                            var sessionHandler = new Http2SessionHandler(_environment);
 
                             //Get cmd is equivalent for connect -> get. This means, that each get request 
                             //will open new session.

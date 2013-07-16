@@ -4,7 +4,7 @@ using System.IO;
 
 namespace Client.Commands
 {
-    internal sealed class PostCommand : Command, IUriCommand
+    internal sealed class PushCommand : Command, IUriCommand
     {
         private Uri _uri;
         private readonly string _method;
@@ -17,11 +17,10 @@ namespace Client.Commands
         public string Path { get { return _uri.PathAndQuery; } }
         public string Method { get { return _method; } }
         public string LocalPath { get; private set; }
-        public string ServerPostAct { get; private set; }
 
-        internal PostCommand(string cmdBody)
+        internal PushCommand(string cmdBody)
         {
-            _method = "post";
+            _method = "push";
             Parse(cmdBody);
         }
 
@@ -47,11 +46,11 @@ namespace Client.Commands
             }
 
             if (Uri.Port == securePort
-                && 
+                &&
                 Uri.Scheme == Uri.UriSchemeHttp
                 ||
                 Uri.Port != securePort
-                && 
+                &&
                 Uri.Scheme == Uri.UriSchemeHttps)
             {
                 throw new InvalidOperationException("Invalid scheme on port! Use https for secure port");
@@ -66,7 +65,6 @@ namespace Client.Commands
             }
 
             LocalPath = localPath;
-            ServerPostAct = cmd.Substring(localPathPosition);
         }
 
         internal override CommandType GetCmdType()

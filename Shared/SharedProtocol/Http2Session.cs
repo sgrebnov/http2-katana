@@ -168,29 +168,26 @@ namespace SharedProtocol
                 {
                     case FrameType.Headers:
                         Console.WriteLine("New headers + priority with id = " + frame.StreamId);
-                        var HeadersFrame = (Headers) frame;
-                        var serializedHeaders = new byte[HeadersFrame.CompressedHeaders.Count];
+                        var headersFrame = (Headers) frame;
+                        var serializedHeaders = new byte[headersFrame.CompressedHeaders.Count];
 
-                        Buffer.BlockCopy(HeadersFrame.CompressedHeaders.Array, 
-                                         HeadersFrame.CompressedHeaders.Offset,
+                        Buffer.BlockCopy(headersFrame.CompressedHeaders.Array, 
+                                         headersFrame.CompressedHeaders.Offset,
                                          serializedHeaders, 0, serializedHeaders.Length);
 
                         decompressedHeaders = _comprProc.Decompress(serializedHeaders, frame.StreamId % 2 != 0);
                         headers = decompressedHeaders;
 
-                        if (!HeadersFrame.IsEndHeaders)
+                        if (!headersFrame.IsEndHeaders)
                         {
                             _toBeContinuedHeaders = decompressedHeaders;
-                            _toBeContinuedFrame = HeadersFrame;
+                            _toBeContinuedFrame = headersFrame;
                             break;
                         }
 
                         if (_toBeContinuedHeaders != null)
                         {
-                            foreach (var key in _toBeContinuedHeaders)
-                            {
-                                headers.Add(key);
-                            }
+                            headers.AddRange(_toBeContinuedHeaders);
                         }
 
                         //Remote side tries to open more streams than allowed
@@ -200,7 +197,7 @@ namespace SharedProtocol
                             return;
                         }
 
-                        stream = new Http2Stream(headers, HeadersFrame.StreamId,
+                        stream = new Http2Stream(headers, headersFrame.StreamId,
                                                   _writeQueue, _flowControlManager,
                                                   _comprProc);
 
@@ -440,9 +437,9 @@ namespace SharedProtocol
                     });
             }
             // Listen for incoming Http/2.0 frames
-            Task incomingTask = new Task(() => PumpIncommingData());
+            var incomingTask = new Task(() => PumpIncommingData());
             // Send outgoing Http/2.0 frames
-            Task outgoingTask = new Task(() => PumpOutgoingData());
+            var outgoingTask = new Task(() => PumpOutgoingData());
             incomingTask.Start();
             outgoingTask.Start();
 
