@@ -13,8 +13,13 @@ namespace Client.Commands
 
         internal override void Parse(string[] cmdArgs)
         {
+            if (cmdArgs == null)
+            {
+                throw  new ArgumentNullException("cmdArgs can't be null");
+            }
+
             Uri uri;
-            if (!Uri.TryCreate(cmdArgs[0], UriKind.Absolute, out uri))
+            if (cmdArgs.Length == 0 || !Uri.TryCreate(cmdArgs[0], UriKind.Absolute, out uri))
             {
                 throw new InvalidOperationException("Invalid ping format!");
             }
