@@ -56,11 +56,11 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\MentalisSecurityLibrary\Security Library.csproj">
+    <ProjectReference Include="..\..\Libraries\MentalisSecurityLibrary\Security Library.csproj">
       <Project>{5bfa5a70-d384-4417-afcc-5c744485a85f}</Project>
       <Name>Security Library</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\Shared\SharedProtocol\SharedProtocol.csproj">
+    <ProjectReference Include="..\..\Libraries\Http2Protocol\SharedProtocol.csproj">
       <Project>{e34ac310-324c-46bc-af9f-1a41df58e867}</Project>
       <Name>SharedProtocol</Name>
     </ProjectReference>
