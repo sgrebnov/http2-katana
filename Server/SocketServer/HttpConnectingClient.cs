@@ -29,7 +29,7 @@ namespace SocketServer
     /// This class handles incoming clients. It can accept them, make handshake and chose how to give a response.
     /// It encouraged to response with http11 or http20 
     /// </summary>
-    internal sealed class HttpConnectingClient : IDisposable
+    public sealed class HttpConnectingClient : IDisposable
     {
         private const string IndexHtml = "\\index.html";
         private const string Root = "\\Root";
