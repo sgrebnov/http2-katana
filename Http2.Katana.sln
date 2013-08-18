@@ -1,0 +1,67 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2012
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Server", "Server", "{C374FCAA-990B-4595-990B-35756DC3D81B}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{B37172EC-B64A-40F3-B67F-C328EB8A4F6C}"
+	ProjectSection(SolutionItems) = preProject
+		.nuget\NuGet.Config = .nuget\NuGet.Config
+		.nuget\NuGet.exe = .nuget\NuGet.exe
+		.nuget\NuGet.targets = .nuget\NuGet.targets
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Libraries", "Libraries", "{88820991-2EC4-4728-9544-8A0DDF11A523}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Http2.Server", "src\Microsoft.Http2.Server\Microsoft.Http2.Server.csproj", "{658C0A0D-A624-4532-AFF0-180EC5ED7887}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Security Library", "src\Libraries\MentalisSecurityLibrary\Security Library.csproj", "{5BFA5A70-D384-4417-AFCC-5C744485A85F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Http2.Protocol", "src\Libraries\Microsoft.Http2.Protocol\Microsoft.Http2.Protocol.csproj", "{E34AC310-324C-46BC-AF9F-1A41DF58E867}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Http2.Server.Owin", "src\Microsoft.Http2.Server.Owin\Microsoft.Http2.Server.Owin.csproj", "{3875E4C6-B0AA-4FAD-AF9C-A471EB08CE2C}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{BD35DF08-E04A-41DF-80B9-F5C0ED689C93}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Http2.Server.Owin.WebApi.Tests", "tests\Http2.Server.Owin.WebApi.Tests\Http2.Server.Owin.WebApi.Tests.csproj", "{4AA8FA86-FFC9-4D4E-A94D-21AE24830010}"
+EndProject
+Global
+	GlobalSection(TestCaseManagementSettings) = postSolution
+		CategoryFile = SMDemoAll.vsmdi
+	EndGlobalSection
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{658C0A0D-A624-4532-AFF0-180EC5ED7887}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{658C0A0D-A624-4532-AFF0-180EC5ED7887}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{658C0A0D-A624-4532-AFF0-180EC5ED7887}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{658C0A0D-A624-4532-AFF0-180EC5ED7887}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5BFA5A70-D384-4417-AFCC-5C744485A85F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5BFA5A70-D384-4417-AFCC-5C744485A85F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5BFA5A70-D384-4417-AFCC-5C744485A85F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5BFA5A70-D384-4417-AFCC-5C744485A85F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E34AC310-324C-46BC-AF9F-1A41DF58E867}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E34AC310-324C-46BC-AF9F-1A41DF58E867}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E34AC310-324C-46BC-AF9F-1A41DF58E867}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E34AC310-324C-46BC-AF9F-1A41DF58E867}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3875E4C6-B0AA-4FAD-AF9C-A471EB08CE2C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3875E4C6-B0AA-4FAD-AF9C-A471EB08CE2C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3875E4C6-B0AA-4FAD-AF9C-A471EB08CE2C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3875E4C6-B0AA-4FAD-AF9C-A471EB08CE2C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4AA8FA86-FFC9-4D4E-A94D-21AE24830010}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4AA8FA86-FFC9-4D4E-A94D-21AE24830010}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4AA8FA86-FFC9-4D4E-A94D-21AE24830010}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4AA8FA86-FFC9-4D4E-A94D-21AE24830010}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{658C0A0D-A624-4532-AFF0-180EC5ED7887} = {C374FCAA-990B-4595-990B-35756DC3D81B}
+		{3875E4C6-B0AA-4FAD-AF9C-A471EB08CE2C} = {C374FCAA-990B-4595-990B-35756DC3D81B}
+		{5BFA5A70-D384-4417-AFCC-5C744485A85F} = {88820991-2EC4-4728-9544-8A0DDF11A523}
+		{E34AC310-324C-46BC-AF9F-1A41DF58E867} = {88820991-2EC4-4728-9544-8A0DDF11A523}
+		{4AA8FA86-FFC9-4D4E-A94D-21AE24830010} = {BD35DF08-E04A-41DF-80B9-F5C0ED689C93}
+	EndGlobalSection
+EndGlobal
