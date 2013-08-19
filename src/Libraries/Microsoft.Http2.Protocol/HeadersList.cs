@@ -1,22 +1,43 @@
-﻿using System.Collections.Generic;
-using System.Linq;
+﻿using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Diagnostics.Contracts;
 
 namespace SharedProtocol
 {
     /// <summary>
     /// Headers list class.
     /// </summary>
-    public class HeadersList : List<KeyValuePair<string, string>>
+    public class HeadersList : IList<KeyValuePair<string, string>>
     {
-        public HeadersList() { }
+        private readonly List<KeyValuePair<string, string>> _collection;
 
-        public HeadersList(IEnumerable<KeyValuePair<string, string>> list) : base(list) { }
+        /// <summary>
+        /// Gets the size of the stored headers in bytes.
+        /// </summary>
+        /// <value>
+        /// The size of the stored headers in bytes.
+        /// </value>
+        public int StoredHeadersSize { get; private set; }
 
-        public HeadersList(int capacity) : base(capacity) { }
+        public HeadersList() 
+            :this(16)
+        { }
+
+        public HeadersList(IEnumerable<KeyValuePair<string, string>> list)
+        {
+            _collection = new List<KeyValuePair<string, string>>();
+            AddRange(list);
+        }
+
+        public HeadersList(int capacity)
+        {
+            _collection = new List<KeyValuePair<string, string>>(capacity);
+        }
 
         public string GetValue(string key)
         {
-            var headerFound = this.Find(header => header.Key == key);
+            var headerFound = _collection.Find(header => header.Key == key);
 
             if (!headerFound.Equals(default(KeyValuePair<string, string>)))
             {
@@ -26,15 +47,102 @@ namespace SharedProtocol
             return null;
         }
 
-        public int GetSize()
+        public void AddRange(IEnumerable<KeyValuePair<string, string>> headers)
         {
-            int result = 0;
-            this.Count(header =>
+            foreach (var header in headers)
             {
-                result += header.Key.Length + header.Value.Length;
-                return true;
-            });
-            return result;
+                Add(header);
+            }
+        }
+
+        public IEnumerator<KeyValuePair<string, string>> GetEnumerator()
+        {
+            return _collection.GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
+        }
+
+        public void Add(KeyValuePair<string, string> header)
+        {
+            _collection.Add(header);
+            StoredHeadersSize += header.Key.Length + header.Value.Length + sizeof(Int32);
+        }
+
+        public void Clear()
+        {
+            _collection.Clear();
+            StoredHeadersSize = 0;
+        }
+
+        public bool Contains(KeyValuePair<string, string> header)
+        {
+            return _collection.Contains(header);
+        }
+
+        public void CopyTo(KeyValuePair<string, string>[] array, int arrayIndex)
+        {
+            Contract.Assert(arrayIndex >= 0 && arrayIndex < Count && array != null);
+            _collection.CopyTo(array, arrayIndex);
+        }
+
+        public bool Remove(KeyValuePair<string, string> header)
+        {
+            StoredHeadersSize -= header.Key.Length + header.Value.Length + sizeof(Int32);
+            return _collection.Remove(header);
+        }
+
+        public int Count
+        {
+            get { return _collection.Count; }
+        }
+    
+        public bool IsReadOnly
+        {
+            get { return true; }
+        }
+
+        public int FindIndex(Predicate<KeyValuePair<string, string>> predicate)
+        {
+            return _collection.FindIndex(predicate);
+        }
+
+        public int IndexOf(KeyValuePair<string, string> header)
+        {
+            return _collection.IndexOf(header);
+        }
+
+        public void Insert(int index, KeyValuePair<string, string> header)
+        {
+            Contract.Assert(index >= 0 && index < Count);
+            _collection.Insert(index, header);
+        }
+
+        public void RemoveAt(int index)
+        {
+            Contract.Assert(index >= 0 && index < Count);
+            _collection.RemoveAt(index);
+        }
+
+        public int RemoveAll(Predicate<KeyValuePair<string,string>> predicate)
+        {
+            return _collection.RemoveAll(predicate);
+        }
+
+        public KeyValuePair<string, string> this[int index]
+        {
+            get
+            {
+                Contract.Assert(index >= 0 && index < Count);
+                return _collection[index];
+            }
+            set
+            {
+                Contract.Assert(index >= 0 && index < Count);
+                _collection[index] = value;
+            }
         }
     }
 }

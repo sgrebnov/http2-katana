@@ -1,7 +1,8 @@
 ﻿using System.Linq;
 using System.Threading;
+using SharedProtocol.Compression.HeadersDeltaCompression;
+using SharedProtocol.EventArgs;
 using SharedProtocol.Exceptions;
-using SharedProtocol.Compression.Http2DeltaHeadersCompression;
 using Org.Mentalis.Security.Ssl;
 using SharedProtocol.Compression;
 using SharedProtocol.Framing;
@@ -10,13 +11,15 @@ using SharedProtocol.Settings;
 using SharedProtocol.FlowControl;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.Contracts;
 using System.Threading.Tasks;
-using SharedProtocol.Extensions;
 using SharedProtocol.Utils;
 
 namespace SharedProtocol
 {
+    /// <summary>
+    /// This class creates and closes session, pumps incoming and outcoming frames and dispatches them.
+    /// It defines events for request handling by subscriber. Also it is responsible for sending some frames.
+    /// </summary>
     public class Http2Session : IDisposable
     {
         private bool _goAwayReceived;
@@ -33,11 +36,11 @@ namespace SharedProtocol
         private readonly bool _usePriorities;
         private readonly bool _useFlowControl;
         private int _lastId;
-        private bool _wasSettingsReceived = false;
-        private bool _wasPingReceived = false;
-        private bool _wasResponseReceived = false;
-        private IList<KeyValuePair<string, string>> _toBeContinuedHeaders = null;
-        private Frame _toBeContinuedFrame = null;
+        private bool _wasSettingsReceived;
+        private bool _wasPingReceived;
+        private bool _wasResponseReceived;
+        private IList<KeyValuePair<string, string>> _toBeContinuedHeaders;
+        private Frame _toBeContinuedFrame;
         private readonly Dictionary<string, string> _handshakeHeaders;
 
         /// <summary>
@@ -63,7 +66,7 @@ namespace SharedProtocol
         /// <summary>
         /// Session closed event.
         /// </summary>
-        public event EventHandler<EventArgs> OnSessionDisposed;
+        public event EventHandler<System.EventArgs> OnSessionDisposed;
 
 
         /// <summary>
@@ -91,7 +94,7 @@ namespace SharedProtocol
         /// The remote max concurrent streams.
         /// </value>
         internal Int32 RemoteMaxConcurrentStreams { get; set; }
-
+        internal Int32 InitialWindowSize { get; set; }
         internal Int32 SessionWindowSize { get; set; }
  
         public Http2Session(SecureSocket sessionSocket, ConnectionEnd end, 
@@ -126,9 +129,18 @@ namespace SharedProtocol
 
             _writeQueue = new WriteQueue(_sessionSocket, ActiveStreams, _usePriorities);
 
-            OurMaxConcurrentStreams = 100; //Spec recommends value 100 by default
-            RemoteMaxConcurrentStreams = 100;
-
+            if (_sessionSocket != null && sessionSocket.SecureProtocol == SecureProtocol.None)
+            {
+                OurMaxConcurrentStreams = int.Parse(_handshakeHeaders[":max_concurrent_streams"]);
+                RemoteMaxConcurrentStreams = int.Parse(_handshakeHeaders[":max_concurrent_streams"]);
+                InitialWindowSize = int.Parse(_handshakeHeaders[":initial_window_size"]);
+            } 
+            else
+            {
+                OurMaxConcurrentStreams = 100; //Spec recommends value 100 by default
+                RemoteMaxConcurrentStreams = 100;
+                InitialWindowSize = 2000000;
+            }
             _flowControlManager = new FlowControlManager(this);
 
             if (!_useFlowControl)
@@ -304,7 +316,7 @@ namespace SharedProtocol
                         //Aggressive window update
                         if (stream != null && stream.IsFlowControlEnabled)
                         {
-                            stream.WriteWindowUpdate(2000000);
+                            stream.WriteWindowUpdate(InitialWindowSize);
                         }
                         break;
                     case FrameType.Ping:
@@ -419,12 +431,12 @@ namespace SharedProtocol
             catch (CompressionError ex)
             {
                 //The endpoint is unable to maintain the compression context for the connection.
-                Http2Logger.LogError("Compression error occured: " + ex.Message);
+                Http2Logger.LogError("Compression error occurred: " + ex.Message);
                 Close(ResetStatusCode.CompressionError);
             }
             catch (ProtocolError pEx)
             {
-                Http2Logger.LogError("Protocol error occured: " + pEx.Message);
+                Http2Logger.LogError("Protocol error occurred: " + pEx.Message);
                 Close(pEx.Code);
             }
         }
@@ -444,7 +456,7 @@ namespace SharedProtocol
                 throw new InvalidOperationException("Trying to create more streams than allowed!");
             }
 
-            Http2Stream stream = new Http2Stream(headers, streamId,
+            var stream = new Http2Stream(headers, streamId,
                                       _writeQueue, _flowControlManager,
                                       _comprProc);
 
@@ -461,11 +473,15 @@ namespace SharedProtocol
             return stream;
         }
 
-        private void ApplyHandshakeResults(IDictionary<string, object> handshakeResult)
+        private void ApplyHandshakeResults(IDictionary<string, object> environment)
         {
-            foreach (var entry in handshakeResult.Keys.Where(entry => handshakeResult[entry] is string))
+            if (environment["HandshakeResult"] is IDictionary<string, object>)
             {
-                _handshakeHeaders.Add(entry, handshakeResult[entry] as string);
+                var handshakeResult = environment["HandshakeResult"] as IDictionary<string, object>;
+                foreach (var entry in handshakeResult.Keys)
+                {
+                    _handshakeHeaders.Add(entry, handshakeResult[entry].ToString());
+                }
             }
         }
 

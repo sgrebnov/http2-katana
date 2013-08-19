@@ -1,13 +1,12 @@
-﻿using Org.Mentalis.Security.Ssl;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
-using SharedProtocol.Compression.HeadersDeltaCompression;
+using Org.Mentalis.Security.Ssl;
 using SharedProtocol.Exceptions;
 using SharedProtocol.Extensions;
 
-namespace SharedProtocol.Compression.Http2DeltaHeadersCompression
+namespace SharedProtocol.Compression.HeadersDeltaCompression
 {
     //This headers compression algorithm is described in
     // http://tools.ietf.org/html/draft-ietf-httpbis-header-compression-01
@@ -19,10 +18,10 @@ namespace SharedProtocol.Compression.Http2DeltaHeadersCompression
         private const int HeadersLimit = 200;
         private const int MaxHeaderByteSize = 4096;
 
-        private readonly SizedHeadersList _localHeaderTable;
-        private readonly SizedHeadersList _remoteHeaderTable;
-        private SizedHeadersList _localRefSet;
-        private SizedHeadersList _remoteRefSet;
+        private readonly HeadersList _localHeaderTable;
+        private readonly HeadersList _remoteHeaderTable;
+        private HeadersList _localRefSet;
+        private readonly HeadersList _remoteRefSet;
 
         private MemoryStream _serializerStream;
 
@@ -38,8 +37,8 @@ namespace SharedProtocol.Compression.Http2DeltaHeadersCompression
                 _localHeaderTable = CompressionInitialHeaders.RequestInitialHeaders;
                 _remoteHeaderTable = CompressionInitialHeaders.ResponseInitialHeaders;
             }
-            _localRefSet = new SizedHeadersList();
-            _remoteRefSet = new SizedHeadersList();
+            _localRefSet = new HeadersList();
+            _remoteRefSet = new HeadersList();
 
             InitCompressor();
             InitDecompressor();
@@ -55,8 +54,16 @@ namespace SharedProtocol.Compression.Http2DeltaHeadersCompression
             _currentOffset = 0;
         }
 
+        /// <summary>
+        /// Modifies the table.
+        /// </summary>
+        /// <param name="headerName">Name of the header.</param>
+        /// <param name="headerValue">The header value.</param>
+        /// <param name="headerType">Type of the header.</param>
+        /// <param name="useHeadersTable">The use headers table.</param>
+        /// <param name="index">The index.</param>
         private void ModifyTable(string headerName, string headerValue, IndexationType headerType,
-                                        SizedHeadersList useHeadersTable, int index)
+                                        HeadersList useHeadersTable, int index)
         {
             int headerLen = headerName.Length + headerValue.Length;
                 switch (headerType)
@@ -218,8 +225,8 @@ namespace SharedProtocol.Compression.Http2DeltaHeadersCompression
 
         public byte[] Compress(HeadersList headers)
         {
-            var toSend = new SizedHeadersList();
-            var toDelete = new SizedHeadersList(_remoteRefSet);
+            var toSend = new HeadersList();
+            var toDelete = new HeadersList(_remoteRefSet);
             ClearStream(_serializerStream, (int) _serializerStream.Position);
 
             //OptimizeInputAndSendOptimized(headersCopy); - dont need this?
@@ -395,8 +402,8 @@ namespace SharedProtocol.Compression.Http2DeltaHeadersCompression
         {
             try
             {
-                SizedHeadersList workingSet = new SizedHeadersList(_localRefSet);
-
+                var workingSet = new HeadersList(_localRefSet);
+                var unindexedHeadersList = new HeadersList();
                 _currentOffset = 0;
 
                 while (_currentOffset != serializedHeaders.Length)
@@ -411,13 +418,17 @@ namespace SharedProtocol.Compression.Http2DeltaHeadersCompression
                         else
                             workingSet.Add(header);
                     }
+                    else if (entry.Item3 == IndexationType.WithoutIndexation)
+                    {
+                        unindexedHeadersList.Add(header);
+                    }
                     else
                     {
                         workingSet.Add(header);
                     }
                 }
 
-                _localRefSet = new SizedHeadersList(workingSet);
+                _localRefSet = new HeadersList(workingSet);
 
                 for (int i = _localRefSet.Count - 1; i >= 0; --i)
                 {
@@ -426,6 +437,7 @@ namespace SharedProtocol.Compression.Http2DeltaHeadersCompression
                         _localRefSet.RemoveAll(h => h.Equals(header));
                 }
 
+                workingSet.AddRange(unindexedHeadersList);
                 return workingSet;
             }
             catch (Exception e)

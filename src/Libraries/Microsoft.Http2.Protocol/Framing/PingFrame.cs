@@ -3,6 +3,7 @@ namespace SharedProtocol.Framing
 {
     /// <summary>
     /// Ping frame class
+    /// See spec: http://tools.ietf.org/html/draft-ietf-httpbis-http2-04#section-6.7
     /// </summary>
     public class PingFrame : Frame
     {
@@ -49,7 +50,7 @@ namespace SharedProtocol.Framing
 
             if (payload != null)
             {
-                System.Buffer.BlockCopy(this.Buffer, Constants.FramePreambleSize, Buffer,
+                System.Buffer.BlockCopy(Buffer, Constants.FramePreambleSize, Buffer,
                     Constants.FramePreambleSize, FrameSize - Constants.FramePreambleSize);
             }
         }

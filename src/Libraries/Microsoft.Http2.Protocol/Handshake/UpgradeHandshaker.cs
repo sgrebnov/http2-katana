@@ -5,7 +5,6 @@ using System.IO;
 using System.Net.Sockets;
 using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading;
 using Org.Mentalis.Security.Ssl;
 using SharedProtocol.Exceptions;
 using SharedProtocol.Framing;
@@ -14,30 +13,25 @@ using SharedProtocol.Utils;
 namespace SharedProtocol.Handshake
 {
     /// <summary>
-    /// Class is used to upgrade handshake
+    ///This class is used for upgrade handshake handling
     /// </summary>
     public class UpgradeHandshaker
     {
         private const int HandshakeResponseSizeLimit = 4096;
-        private static readonly byte[] CRLFCRLF = new[] { (byte)'\r', (byte)'\n', (byte)'\r', (byte)'\n' };
-        private const int Timeout = 60000;
+        private static readonly byte[] CRLFCRLF = { (byte)'\r', (byte)'\n', (byte)'\r', (byte)'\n' };
 
 
-        private Thread _readThread;
         private readonly ConnectionEnd _end;
         private readonly Dictionary<string, object> _headers;
-        private readonly ManualResetEvent _responseReceivedRaised;
         private bool _wasResponseReceived;
-        private Exception _error;
         private IDictionary<string, object> _handshakeResult;
-
+        private HandshakeResponse _response;
         public SecureSocket InternalSocket { get; private set; }
 
         public UpgradeHandshaker(IDictionary<string, object> handshakeEnvironment)
         {
             InternalSocket = (SecureSocket)handshakeEnvironment["secureSocket"];
             _end = (ConnectionEnd)handshakeEnvironment["end"];
-            _responseReceivedRaised = new ManualResetEvent(false);
             _handshakeResult = new Dictionary<string, object>();
 
             if (_end == ConnectionEnd.Client)
@@ -49,7 +43,9 @@ namespace SharedProtocol.Handshake
                         {
                             {":path",  handshakeEnvironment[":path"]},
                             {":host",  handshakeEnvironment[":host"]},
-                            {":version",  handshakeEnvironment[":version"]}
+                            {":version",  handshakeEnvironment[":version"]},
+                            {":max_concurrent_streams", 100},
+                            {":initial_window_size", 2000000},
                         };
                 }
                 else
@@ -59,33 +55,22 @@ namespace SharedProtocol.Handshake
             }
         }
 
+        public void ReadHeadersAndInspectHandshake()
+        {
+            try
+            {
+                _response = Read11Headers();
+                _wasResponseReceived = true;
+            }
+            catch (Exception ex)
+            {
+                Http2Logger.LogError(ex.Message);
+                throw;
+            }
+        }
+
         public IDictionary<string, object> Handshake()
         {
-            var response = new HandshakeResponse();
-            _readThread = new Thread((object state) =>
-                {
-                    var handle = state as EventWaitHandle;
-
-                    try
-                    {
-                        response = Read11Headers();
-                        _wasResponseReceived = true;
-                        if (handle != null) handle.Set();
-                    }
-                    catch (Exception ex)
-                    {
-                        Http2Logger.LogError(ex.Message);
-
-                        // singal that there is an error
-                        if (handle != null) handle.Set();
-                        _error = ex;
-                        throw;
-                    }
-                });
-
-            _readThread.IsBackground = true;
-            _readThread.Start(_responseReceivedRaised);
-
             if (_end == ConnectionEnd.Client)
             {
                 // Build the request
@@ -111,19 +96,14 @@ namespace SharedProtocol.Handshake
                 }
                 builder.Append("\r\n\r\n");
                 byte[] requestBytes = Encoding.UTF8.GetBytes(builder.ToString());
-                _handshakeResult = new Dictionary<string, object>(_headers);
-                _handshakeResult.Add(":method", "get");
+                _handshakeResult = new Dictionary<string, object>(_headers) {{":method", "get"}};
                 InternalSocket.Send(requestBytes, 0, requestBytes.Length, SocketFlags.None);
-
-                _responseReceivedRaised.WaitOne(Timeout);
-                _responseReceivedRaised.Dispose();
+                ReadHeadersAndInspectHandshake();
             }
             else
             {
-                _responseReceivedRaised.WaitOne(Timeout);
-                _responseReceivedRaised.Dispose();
-
-                if (response.Result == HandshakeResult.Upgrade)
+                ReadHeadersAndInspectHandshake();
+                if (_response.Result == HandshakeResult.Upgrade)
                 {
                     const string status = "101";
                     const string protocol = "HTTP/1.1";
@@ -142,29 +122,13 @@ namespace SharedProtocol.Handshake
 
             if (!_wasResponseReceived)
             {
-                if (_readThread.IsAlive)
-                {
-                    _readThread.Abort();
-                    _readThread.Join();
-                }
                 throw new Http2HandshakeFailed(HandshakeFailureReason.Timeout);
             }
 
-            if (_error != null)
-            {
-                throw _error;
-            }
-
-            if (response.Result != HandshakeResult.Upgrade)
+            if (_response.Result != HandshakeResult.Upgrade)
             {
                 throw new Http2HandshakeFailed(HandshakeFailureReason.InternalError);
             }
-
-            if (_readThread.IsAlive)
-            {
-                _readThread.Abort();
-            }
-            _readThread.Join();
 
             return _handshakeResult;
         }
