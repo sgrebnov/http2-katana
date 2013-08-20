@@ -1,5 +1,6 @@
 ﻿using System;
 using SharedProtocol;
+using SharedProtocol.EventArgs;
 
 namespace SocketServer
 {

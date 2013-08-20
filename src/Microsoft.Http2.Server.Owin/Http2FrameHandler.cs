@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using SharedProtocol;
+using SharedProtocol.EventArgs;
 using SharedProtocol.Extensions;
 using SharedProtocol.Framing;
 using SharedProtocol.Utils;

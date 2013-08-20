@@ -5,6 +5,7 @@ using System.Linq;
 using System.Reflection;
 using Org.Mentalis.Security.Ssl;
 using SharedProtocol;
+using SharedProtocol.EventArgs;
 using SharedProtocol.Extensions;
 using SharedProtocol.Framing;
 using SharedProtocol.IO;
