@@ -54,7 +54,7 @@ namespace Microsoft.Http2.Server.Owin
             properties.Add("use-flowControl", useFlowControl);
 
             //return new HttpSocketServer(app, properties, new FileServerFrameHandler());
-            return new HttpSocketServer(app, properties, new Http2FrameHandler(app));
+            return new OwinSocketServer(app, properties);
         }
 
     }

@@ -8,6 +8,12 @@ namespace Owin.Test.WebApiTest
     {
         private static Dictionary<int, string> _store = new Dictionary<int, string>();
 
+        public ValuesController()
+        {
+            _store.Add(0, "value#0");
+            _store.Add(1, "value#1");
+        }
+
         // GET api/values 
         public IEnumerable<string> Get()
         {

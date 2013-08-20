@@ -65,11 +65,9 @@
     <Compile Include="DictionaryExtensions.cs" />
     <Compile Include="EventArgs\ServerStartEventArgs.cs" />
     <Compile Include="EventArgs\ServerStopEventArgs.cs" />
-    <Compile Include="FileServerFrameHandler.cs" />
     <Compile Include="GlobalSuppressions.cs" />
+    <Compile Include="Http2ServerBase.cs" />
     <Compile Include="HttpConnectingClient.cs" />
-    <Compile Include="HttpSocketServer.cs" />
-    <Compile Include="IHttp2FrameHandler.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

@@ -475,7 +475,7 @@ namespace SharedProtocol
 
         private void ApplyHandshakeResults(IDictionary<string, object> environment)
         {
-            if (environment["HandshakeResult"] is IDictionary<string, object>)
+            if (environment.ContainsKey("HandshakeResult") && environment["HandshakeResult"] is IDictionary<string, object>)
             {
                 var handshakeResult = environment["HandshakeResult"] as IDictionary<string, object>;
                 foreach (var entry in handshakeResult.Keys)
@@ -718,5 +718,7 @@ namespace SharedProtocol
 
             Http2Logger.LogDebug("Session closed");
         }
+
+        public SecureSocket Socket { get { return _sessionSocket; } }
     }
 }
