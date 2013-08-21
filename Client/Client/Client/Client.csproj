@@ -55,9 +55,6 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\packages\Microsoft.Owin.Hosting.1.1.0-beta2\lib\net40\Microsoft.Owin.Hosting.dll</HintPath>
     </Reference>
-    <Reference Include="Owin">
-      <HintPath>..\..\..\Shared\SharedProtocol\packages\Owin.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.configuration" />
     <Reference Include="System.Core" />
@@ -90,18 +87,18 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\MentalisSecurityLibrary\Security Library.csproj">
+    <None Include="app.config" />
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\src\Libraries\MentalisSecurityLibrary\Security Library.csproj">
       <Project>{5bfa5a70-d384-4417-afcc-5c744485a85f}</Project>
       <Name>Security Library</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\..\Shared\SharedProtocol\SharedProtocol.csproj">
+    <ProjectReference Include="..\..\..\src\Libraries\Microsoft.Http2.Protocol\Microsoft.Http2.Protocol.csproj">
       <Project>{e34ac310-324c-46bc-af9f-1a41df58e867}</Project>
-      <Name>SharedProtocol</Name>
+      <Name>Microsoft.Http2.Protocol</Name>
     </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="app.config" />
-    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
