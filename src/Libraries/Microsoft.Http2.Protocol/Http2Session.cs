@@ -42,6 +42,7 @@ namespace SharedProtocol
         private readonly HeadersList _toBeContinuedHeaders;
         private Frame _toBeContinuedFrame;
         private readonly Dictionary<string, string> _handshakeHeaders;
+        public SecureSocket Socket { get { return _sessionSocket; } }
 
         /// <summary>
         /// Occurs when settings frame was sent.
